@@ -68,3 +68,19 @@ def mase(y_true: np.ndarray, y_pred: np.ndarray, y_train: np.ndarray,
     if scale < _EPS:
         scale = _EPS
     return float(np.mean(np.abs(y_true - y_pred)) / scale)
+
+
+def all_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_train: np.ndarray,
+                period: int = 1) -> dict[str, float]:
+    """Compute every metric at once and return a dict keyed by metric name."""
+    return {
+        "mae": mae(y_true, y_pred),
+        "rmse": rmse(y_true, y_pred),
+        "mape": mape(y_true, y_pred),
+        "smape": smape(y_true, y_pred),
+        "mase": mase(y_true, y_pred, y_train, period=period),
+    }
+
+
+# all of ours are lower-is-better, but reports iterate this so keep it explicit
+LOWER_IS_BETTER = ("mae", "rmse", "mape", "smape", "mase")
