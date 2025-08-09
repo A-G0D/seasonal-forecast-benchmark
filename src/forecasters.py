@@ -1,7 +1,11 @@
-"""Two baselines (naive, seasonal-naive) and additive Holt-Winters on numpy."""
+"""Two baselines (naive, seasonal-naive) and two improved models (additive
+Holt-Winters, ridge on calendar + lag features). Holt-Winters is written on
+numpy so the only real dependency is sklearn for the ridge fit.
+"""
 from __future__ import annotations
 
 import numpy as np
+from sklearn.linear_model import Ridge
 
 from .base import Forecaster
 
@@ -94,6 +98,7 @@ class HoltWinters(Forecaster):
         first = y[:m]
         second = y[m:2 * m] if y.size >= 2 * m else first
         level0 = float(first.mean())
+        # average per-step change between the first two seasons
         trend0 = float((second.mean() - first.mean()) / m)
         season0 = first - level0
         return level0, trend0, season0
@@ -132,3 +137,75 @@ class HoltWinters(Forecaster):
         base = self._level + steps * self._trend
         season_idx = (self._n_seen + steps - 1) % m
         return base + self._season[season_idx]
+
+
+class RegressionForecaster(Forecaster):
+    """Ridge on per-step features: a one-hot of the position in the cycle, a
+    normalised time index for trend, and a few autoregressive lags. predict
+    rolls forward one step at a time, feeding its own output back as the lags.
+    """
+
+    name = "regression"
+
+    def __init__(
+        self,
+        period: int,
+        lags: tuple[int, ...] = (1, 7),
+        alpha: float = 1.0,
+    ) -> None:
+        super().__init__()
+        if period < 1:
+            raise ValueError("period must be >= 1")
+        if not lags:
+            raise ValueError("need at least one lag")
+        if min(lags) < 1:
+            raise ValueError("lags must be >= 1")
+        self.period = int(period)
+        self.lags = tuple(int(l) for l in sorted(set(lags)))
+        self.alpha = float(alpha)
+        self._model = Ridge(alpha=self.alpha)
+        self._history: np.ndarray = np.empty(0)
+
+    def _featurize(self, lag_vals: dict[int, float], step_index: int) -> np.ndarray:
+        season = np.zeros(self.period)
+        season[step_index % self.period] = 1.0
+        time_feat = np.array([step_index / max(1, self._n_seen)])
+        lag_feat = np.array([lag_vals[l] for l in self.lags])
+        return np.concatenate([season, time_feat, lag_feat])
+
+    def fit(self, y: np.ndarray) -> "RegressionForecaster":
+        y = self._check_train(y)
+        max_lag = max(self.lags)
+        if y.size <= max_lag + 1:
+            raise ValueError(
+                f"need more than {max_lag + 1} points for lags {self.lags}"
+            )
+        self._n_seen = y.size
+
+        rows, targets = [], []
+        for i in range(max_lag, y.size):
+            lag_vals = {l: y[i - l] for l in self.lags}
+            rows.append(self._featurize(lag_vals, i))
+            targets.append(y[i])
+
+        X = np.vstack(rows)
+        self._model.fit(X, np.asarray(targets))
+        self._history = y.copy()
+        self._fitted = True
+        return self
+
+    def predict(self, horizon: int) -> np.ndarray:
+        self._require_fitted()
+        horizon = self._check_horizon(horizon)
+        history = list(self._history)
+        out = np.empty(horizon, dtype=np.float64)
+
+        for h in range(horizon):
+            step_index = self._n_seen + h
+            lag_vals = {l: history[-l] for l in self.lags}
+            x = self._featurize(lag_vals, step_index).reshape(1, -1)
+            yhat = float(self._model.predict(x)[0])
+            out[h] = yhat
+            history.append(yhat)
+
+        return out
