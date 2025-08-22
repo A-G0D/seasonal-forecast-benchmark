@@ -1,0 +1,14 @@
+{
+  "seed": 137,
+  "horizon": 28,
+  "series": ["retail_daily", "energy_load", "web_traffic"],
+  "holt_winters": {
+    "alpha": 0.3,
+    "beta": 0.05,
+    "gamma": 0.2
+  },
+  "regression": {
+    "alpha": 1.0
+  },
+  "log_path": "logs/trace.jsonl"
+}
