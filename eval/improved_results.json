@@ -1,0 +1,74 @@
+[
+  {
+    "series": "retail_daily",
+    "model": "holt_winters",
+    "horizon": 28,
+    "metrics": {
+      "mae": 7.249824945978653,
+      "rmse": 9.059557386700146,
+      "mape": 2.318832199895961,
+      "smape": 2.3318268786041587,
+      "mase": 0.804246843178563
+    }
+  },
+  {
+    "series": "retail_daily",
+    "model": "regression",
+    "horizon": 28,
+    "metrics": {
+      "mae": 7.538219246109427,
+      "rmse": 9.332919360183544,
+      "mape": 2.3954464070508457,
+      "smape": 2.416985304929763,
+      "mase": 0.8362393681290473
+    }
+  },
+  {
+    "series": "energy_load",
+    "model": "holt_winters",
+    "horizon": 28,
+    "metrics": {
+      "mae": 21.708311247042776,
+      "rmse": 26.097408242993012,
+      "mape": 2.5552758021594575,
+      "smape": 2.557796786850261,
+      "mase": 0.86961646287598
+    }
+  },
+  {
+    "series": "energy_load",
+    "model": "regression",
+    "horizon": 28,
+    "metrics": {
+      "mae": 21.108870606944606,
+      "rmse": 24.42931467970304,
+      "mape": 2.540197381399872,
+      "smape": 2.5285416982003337,
+      "mase": 0.8456033812864439
+    }
+  },
+  {
+    "series": "web_traffic",
+    "model": "holt_winters",
+    "horizon": 28,
+    "metrics": {
+      "mae": 89.26597635164174,
+      "rmse": 105.2400487776882,
+      "mape": 4.838168492867654,
+      "smape": 4.678451695651005,
+      "mase": 1.3315642422816447
+    }
+  },
+  {
+    "series": "web_traffic",
+    "model": "regression",
+    "horizon": 28,
+    "metrics": {
+      "mae": 49.094871619378175,
+      "rmse": 62.79582212198882,
+      "mape": 2.657222517588078,
+      "smape": 2.612027565924517,
+      "mase": 0.7323392203794521
+    }
+  }
+]

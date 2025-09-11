@@ -1,0 +1,74 @@
+[
+  {
+    "series": "retail_daily",
+    "model": "naive",
+    "horizon": 28,
+    "metrics": {
+      "mae": 17.537568050312462,
+      "rmse": 23.12960585253893,
+      "mape": 5.34772395652444,
+      "smape": 5.529013592970361,
+      "mase": 1.9454999046999821
+    }
+  },
+  {
+    "series": "retail_daily",
+    "model": "seasonal_naive",
+    "horizon": 28,
+    "metrics": {
+      "mae": 10.81916179723572,
+      "rmse": 13.240766104503919,
+      "mape": 3.4083958213482988,
+      "smape": 3.4708136886407592,
+      "mase": 1.2002050788952328
+    }
+  },
+  {
+    "series": "energy_load",
+    "model": "naive",
+    "horizon": 28,
+    "metrics": {
+      "mae": 102.95993954159542,
+      "rmse": 118.98958423557549,
+      "mape": 12.973777259317526,
+      "smape": 12.08523717261727,
+      "mase": 4.124487502651041
+    }
+  },
+  {
+    "series": "energy_load",
+    "model": "seasonal_naive",
+    "horizon": 28,
+    "metrics": {
+      "mae": 26.949743551228295,
+      "rmse": 31.26542677514694,
+      "mape": 3.2105076175315714,
+      "smape": 3.181574172616466,
+      "mase": 1.0795837776476729
+    }
+  },
+  {
+    "series": "web_traffic",
+    "model": "naive",
+    "horizon": 28,
+    "metrics": {
+      "mae": 112.2956478795384,
+      "rmse": 141.9755515317002,
+      "mape": 5.757282357978568,
+      "smape": 5.86033348755426,
+      "mase": 1.675093640282509
+    }
+  },
+  {
+    "series": "web_traffic",
+    "model": "seasonal_naive",
+    "horizon": 28,
+    "metrics": {
+      "mae": 71.1014701469715,
+      "rmse": 91.1559529457965,
+      "mape": 3.838830744114475,
+      "smape": 3.793367156973932,
+      "mase": 1.0606076255572354
+    }
+  }
+]
