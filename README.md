@@ -26,6 +26,29 @@ tests/             unit / integration / determinism tests
 docs/              design notes and a metric reference
 ```
 
+## How it fits together
+
+```mermaid
+flowchart LR
+    subgraph gen["synthetic data"]
+        Spec["SeriesSpec\n(series.py)"] --> Series["make_series\nlevel + trend + season + noise"]
+    end
+    Series --> Split["train_test_split\n(holdout = horizon)"]
+    Split -->|train| Fit["forecaster.fit\n(naive / seasonal-naive /\nHolt-Winters / regression)"]
+    Fit --> Predict["forecaster.predict(horizon)"]
+    Split -->|test| Score["metrics.all_metrics\nMAE / RMSE / MAPE / sMAPE / MASE"]
+    Predict --> Score
+    Fit -.trace event.-> Observer["Observer\n(shared/obs.py)"]
+    Score -.trace event.-> Observer
+    Observer --> Trace["logs/trace.jsonl"]
+    Score --> Aggregate["Benchmark.aggregate\n(mean per model)"]
+    Aggregate --> Artifacts["eval/*.json\neval/COMPARISON.md"]
+```
+
+`registry.py` decides which model factories count as baseline vs improved,
+and `eval/run_benchmark.py` is what actually drives the whole diagram end to
+end.
+
 ## Quick start
 
 ```bash
@@ -81,6 +104,33 @@ The ridge model on calendar + lag features comes out ahead on every metric, and
 its MASE lands below 1 (so it beats the seasonal-naive scale). `eval/COMPARISON.md`
 has the full table.
 
+## Demonstration
+
+Running the benchmark end to end:
+
+```bash
+$ python eval/run_benchmark.py
+wrote eval artifacts to /path/to/forecast-toolkit/eval
+improved wins on 5/5 metrics
+```
+
+That run regenerates `eval/comparison.json`, from which the summary line comes
+straight out:
+
+```json
+"winner_by_metric": {
+  "mae": "improved",
+  "rmse": "improved",
+  "mape": "improved",
+  "smape": "improved",
+  "mase": "improved"
+}
+```
+
+Same numbers as the table above: regression's MASE of 0.805 against
+seasonal-naive's 1.113 is the clearest single result, it's forecasting at
+about 72% of seasonal-naive's error on the scaled metric.
+
 ## Tests
 
 ```bash
@@ -91,3 +141,10 @@ Covers series generation, each forecaster, the metrics, an end-to-end backtest,
 and determinism (same seed reproduces identical forecasts and metrics across
 repeated runs). The suite leans on real sklearn fits so it takes a couple of
 minutes to run in full.
+
+## Writing hygiene
+
+`scripts/check_prose.py` is a small stdlib-only script that scans tracked
+markdown and Python files for em-dashes, leaked tool-call artifacts, and a
+short list of keywords that shouldn't be in this repo. Run it by hand with
+`python scripts/check_prose.py`, it isn't wired into a git hook or CI.
